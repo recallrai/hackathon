@@ -1,0 +1,22 @@
+{
+    "llms": [
+        {
+            "provider": "Groq",
+            "name": "llama-3.1-8b-instant",
+            "api_key": "",
+            "cost": {
+                "input": 0.05,
+                "output": 0.08
+            }
+        }
+    ],
+    "embeddings": {
+        "provider": "OpenAI",
+        "name": "text-embedding-3-small",
+        "n_dim": 1536,
+        "api_key": "",
+        "cost": {
+            "input": 0.02
+        }
+    }
+}

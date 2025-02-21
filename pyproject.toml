@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "hackathon"
+version = "0.0.1"
+description = "Prototype of recallrai approach."
+authors = ["Devasheesh Mishra"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+streamlit = "^1.41.1"
+sqlalchemy = "^2.0.36"
+python-dotenv = "^1.0.1"
+sqlalchemy-utils = "^0.41.2"
+pydantic-settings = "^2.7.1"
+psycopg2-binary = "^2.9.10"
+alembic = "^1.14.0"
+uvicorn = "^0.34.0"
+openai = "^1.59.4"
+instructor = "^1.7.2"
+groq = "^0.15.0"
+pyvis = "^0.3.2"
+plotly = "^5.24.1"
+networkx = "^3.4.2"
+pymongo = "^4.10.1"
+scipy = "^1.15.1"
+pymilvus = "^2.5.3"
+together = "^1.4.0"
+scikit-learn = "^1.6.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
