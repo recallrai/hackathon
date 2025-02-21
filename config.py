@@ -35,25 +35,6 @@ class ModelsConfig(BaseModel):
     embedding: EmbeddingConfig
 
 class Settings(BaseSettings):
-    # Environment Configuration
-    ENV: str = 'development'
-
-    # Auth Configuration
-    AUTH_USERNAME: Union[str, None] = None
-    AUTH_PASSWORD: Union[str, None] = None
-
-    @field_validator('AUTH_USERNAME')
-    def validate_auth_username(cls, v, values):
-        if values.data.get('ENV') == 'production' and not v:
-            raise ValueError("AUTH_USERNAME must be set in production")
-        return v
-
-    @field_validator('AUTH_PASSWORD')
-    def validate_auth_password(cls, v, values):
-        if values.data.get('ENV') == 'production' and not v:
-            raise ValueError("AUTH_PASSWORD must be set in production")
-        return v
-
     # PostgreSQL Configuration
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str

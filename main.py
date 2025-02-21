@@ -1,9 +1,9 @@
 import streamlit as st
 import asyncio
-from .home import show_home
-from .reset_database import show_reset_database
-from .memory_graph import show_memory_graph
-from .chat import show_chat_interface
+from home import show_home
+from reset_database import show_reset_database
+from memory_graph import show_memory_graph
+from chat import show_chat_interface
 
 class MultiPageApp:
     def __init__(self):
@@ -25,6 +25,14 @@ class MultiPageApp:
             "Go to",
             list(main_options.keys())
         )
+
+        page_func = main_options[selection]
+
+        if page_func:
+            if asyncio.iscoroutinefunction(page_func):
+                await page_func()
+            else:
+                page_func()
 
 async def main():
     st.set_page_config(

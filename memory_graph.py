@@ -1,8 +1,8 @@
 import streamlit as st
 import plotly.graph_objects as go
 import networkx as nx
-from .config import get_settings
-from .utils import mongodb, postgres
+from config import get_settings
+from utils import mongodb, postgres
 
 settings = get_settings()
 DOC_ID = "32f7543c-cf51-49f1-8163-93652e26a695"

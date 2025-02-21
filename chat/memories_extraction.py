@@ -105,6 +105,11 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
         if call_count > max_recursive_calls:
             st.warning(f"Max recursive calls ({max_recursive_calls}) reached without final result")
 
+        if st.session_state.generated_memories:
+            st.success(f"Generated {len(st.session_state.generated_memories)} memories")
+        else:
+            st.warning("No memories generated")
+
     if st.session_state.current_step >= 2 and st.session_state.generated_memories:
         st.markdown("---")
         st.header("Step 2: Decision Making")
@@ -168,7 +173,7 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
             # Process multiple memories in parallel
             tasks = [
                 handle_decision(
-                    memory_text=memory,
+                    new_memory_text=memory,
                 )
                 for memory in st.session_state.generated_memories
             ]
@@ -246,24 +251,18 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
                         DEFAULT_CONFIGS["insertion"]["temperature"]
                     ):
                         full_resp += chunk
-                    thinking_resp, json_resp = await process_thinking_response(full_resp)
-
-                    try:
-                        output = ModelResponseInsertion.model_validate_json(json_resp)
-                    except Exception as e:
-                        st.error(f"Error validating JSON response: {str(e)}")
-                        continue
+                    thinking_resp, json_resp = await process_thinking_response(full_resp, ModelResponseInsertion)
 
                     st.write("**Model Thinking:**")
                     st.text(thinking_resp)
                     st.write("**Final Action:**")
-                    st.json(output.model_dump_json())
+                    st.json(json_resp.model_dump_json())
 
                     st.write("**Saving to databases...**")
                     # Convert int back to uuid using mappings if we have related memories
                     if len(rel_memories) > 0:
-                        output.related_memory_ids = [
-                            uuid_mapping[id] for id in output.related_memory_ids
+                        json_resp.related_memory_ids = [
+                            uuid_mapping[id] for id in json_resp.related_memory_ids
                             if int(id) in uuid_mapping
                         ]
 
@@ -276,9 +275,9 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
                     st.write("✓ Saved to Milvus")
 
                     # Update mongodb adjacency list
-                    for id in output.related_memory_ids:
+                    for id in json_resp.related_memory_ids:
                         mongodb.make_edge(id, new_mem_id)
-                    st.write(f"✓ Created {len(output.related_memory_ids)} edges in MongoDB")
+                    st.write(f"✓ Created {len(json_resp.related_memory_ids)} edges in MongoDB")
                     
                     st.success("Insert action completed successfully")
 
@@ -340,23 +339,16 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
                             full_resp += chunk
                         thinking_resp, json_resp = await process_thinking_response(full_resp)
 
-                        try:
-                            output = ModelResponseAddition.model_validate_json(json_resp)
-                        except Exception as e:
-                            st.error(f"Failed to parse model response: {str(e)}")
-                            st.error(json_resp)
-                            continue
-
                         st.write("**Model Thinking:**")
                         st.text(thinking_resp)
                         st.write("**Final Action:**")
-                        st.json(output.model_dump_json())
+                        st.json(json_resp.model_dump_json())
 
                         st.write("**Updating databases...**")
                         # Convert int back to uuid using mappings if we have related memories
                         if len(rel_memories) > 0:
-                            output.related_memory_ids = [
-                                id_mapping[id] for id in output.related_memory_ids
+                            json_resp.related_memory_ids = [
+                                id_mapping[id] for id in json_resp.related_memory_ids
                             ]
 
                         # Update memory in postgres
@@ -369,9 +361,9 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
 
                         # Update mongodb adjacency list
                         # Add new edges
-                        for id in output.related_memory_ids:
+                        for id in json_resp.related_memory_ids:
                             mongodb.make_edge(updated_memory.memory_id, id)
-                        st.write(f"✓ Updated {len(output.related_memory_ids)} edges in MongoDB")
+                        st.write(f"✓ Updated {len(json_resp.related_memory_ids)} edges in MongoDB")
 
                         st.success(f"Memory {updated_memory.memory_id} updated successfully")
 
