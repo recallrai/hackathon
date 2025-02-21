@@ -51,7 +51,6 @@ def show_model_settings():
     )
     return selected_model, slider_temp
 
-
 async def show_chat_interface():
     """entry point for chat interface"""
 
@@ -76,7 +75,7 @@ async def show_chat_interface():
             st.session_state.chat_welcome_shown = True
             st.rerun()
     else:
-        if st.session_state.current_step:
+        if st.session_state.current_step > 0:
             await show_memory_extraction()
         else:
             await show_chat(selected_model, temperature)

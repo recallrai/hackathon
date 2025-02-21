@@ -3,6 +3,7 @@ import asyncio
 from .home import show_home
 from .reset_database import show_reset_database
 from .memory_graph import show_memory_graph
+from .chat import show_chat_interface
 
 class MultiPageApp:
     def __init__(self):
