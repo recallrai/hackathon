@@ -76,7 +76,7 @@ def calculate_node_size(text, min_size=60, max_size=400):
     return max(min_size, min(final_size, max_size))
 
 def show_memory_graph():
-    st.title("Memory Network Visualization")
+    st.title("Memory Graph Visualization")
     
     # Sidebar organization
     with st.sidebar:
@@ -128,29 +128,47 @@ def show_memory_graph():
         adjacency_list = mongodb.get_adjacency_list(DOC_ID)
         G = nx.Graph()
         
-        # Add nodes with metadata
-        for node_id in adjacency_list.keys():
+        # Get all nodes from PostgreSQL database
+        db_nodes = postgres.get_all_nodes()
+        
+        # Initialize the nodes dictionary with zero connections
+        nodes_dict = {}
+        
+        # First pass: Count connections for each node
+        for node_id, connections in adjacency_list.items():
+            nodes_dict[node_id] = len(connections)
+        
+        # Second pass: Add all nodes to the graph
+        for node in db_nodes:
             try:
-                memory = postgres.get_memory_details(node_id)
-                connections = len(adjacency_list[node_id])
-                G.add_node(node_id, 
-                          text=memory.content,
-                          connections=connections,
-                          importance=connections)
+                memory = postgres.get_memory_details(node.id)
+                # Get connection count from dictionary, default to 0
+                connection_count = nodes_dict.get(node.id, 0)
+                
+                G.add_node(
+                    node.id,
+                    text=memory.content,
+                    connections=connection_count,
+                    importance=connection_count
+                )
             except Exception as e:
-                st.error(f"Error fetching memory {node_id}: {str(e)}")
+                st.error(f"Error fetching memory {node.id}: {str(e)}")
                 continue
         
-        # Add edges with weights
+        # Add edges
         for node_id, connections in adjacency_list.items():
-            for target_id in connections:
-                if target_id in adjacency_list:
-                    weight = 1 / (len(connections) + len(adjacency_list[target_id]))
-                    G.add_edge(node_id, target_id, weight=weight)
+            if node_id in G:  # Only add edges if source node exists
+                for target_id in connections:
+                    if target_id in G:  # Only add edge if target node exists
+                        weight = 1 / (len(connections) + len(adjacency_list.get(target_id, [])))
+                        G.add_edge(node_id, target_id, weight=weight)
         
         if len(G.nodes()) == 0:
             st.warning("No memories found in the network")
             return
+        
+        # Calculate max_connections
+        max_connections = max((G.nodes[node]['connections'] for node in G.nodes()), default=1)
         
         # Calculate layout
         layout_name = selected_layout.split(" ")[0].lower()
@@ -207,7 +225,6 @@ def show_memory_graph():
         hover_text = []
         node_sizes = []
         node_colors = []
-        max_connections = max(G.nodes[node]['connections'] for node in G.nodes())
         
         for node in G.nodes():
             x, y = pos[node]
