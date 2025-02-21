@@ -3,7 +3,8 @@ from .utils import (
     insert_memory,
     clear_all_nodes,
     get_node_count,
-    update_memory
+    update_memory,
+    get_all_nodes
 )
 
 __all__ = [
@@ -11,5 +12,6 @@ __all__ = [
     "insert_memory",
     "clear_all_nodes",
     "get_node_count",
-    "update_memory"
+    "update_memory",
+    "get_all_nodes"
 ]

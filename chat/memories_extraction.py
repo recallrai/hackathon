@@ -36,7 +36,7 @@ async def show_memory_extraction():
         del st.session_state.generated_memories
         st.session_state.current_step = 1
 
-    st.title("Memory Extraction Process")
+    st.title("Update Assistant's Knowledge")
 
     if st.session_state.current_step >= 1:
         st.header("Step 1: Generate Memories")
@@ -141,11 +141,17 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
                 memory = postgres.get_memory_details(node_id)
                 relevant_memories.append(memory)
             
-            # Create decision prompt
+            # Normalize memory IDs
+            print("relevant_memories: ", relevant_memories)
+            normalized_memories, uuid_mapping = normalize_memories(relevant_memories)
+            print("normalized_memories: ", normalized_memories)
+            print("uuid_mapping: ", uuid_mapping)
+            
+            # Create decision prompt with normalized memories
             decision_prompt = get_decision_prompt_reasoning(
                 date=datetime.now(timezone.utc).strftime("%dth %B %Y"),
                 time=datetime.now(timezone.utc).strftime("%H:%M:%S"),
-                existing_memories=relevant_memories,
+                existing_memories=normalized_memories,
                 new_memory=new_memory_text
             )
             
@@ -162,7 +168,31 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
             
             # Parse response into ModelResponseDecision
             thinking, decision = await process_thinking_response(full_response, ModelResponseDecision)
-            # Return raw response for now - parsing will be handled by the interface
+            
+            # Convert normalized IDs back to UUIDs
+            if decision.action == DecisionOutputType.INSERT:
+                decision.data.content = new_memory_text
+                decision.data.related_memory_ids = [
+                    uuid_mapping[id] for id in decision.data.related_memory_ids
+                ]
+            elif decision.action == DecisionOutputType.MERGE_CONFLICT:
+                for memory in decision.data.conflicting_memories:
+                    if memory.memory_id in uuid_mapping:
+                        memory.memory_id = uuid_mapping[memory.memory_id]
+            elif decision.action == DecisionOutputType.RESOLVE_TEMPORAL_CONFLICT:
+                decision.data.memory_ids = [
+                    uuid_mapping[id] for id in decision.data.memory_ids
+                ]
+            elif decision.action == DecisionOutputType.ADDITION_TO_EXISTING_MEMORY:
+                for memory in decision.data.updated_memories:
+                    if memory.memory_id in uuid_mapping:
+                        memory.memory_id = uuid_mapping[memory.memory_id]
+            elif decision.action == DecisionOutputType.IGNORE:
+                pass
+            else:
+                raise ValueError(f"Unknown action type: {decision.action}")
+
+
             return {
                 "thinking": thinking,
                 "response": decision,
@@ -181,7 +211,7 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
 
             # Display results
             for idx, (memory, result) in enumerate(zip(st.session_state.generated_memories, results)):
-                with st.expander(f"Memory {idx + 1}: {memory[:100]}...", expanded=True):
+                with st.expander(f"Memory {idx + 1}: {memory}...", expanded=True):
                     st.write("**Relevant Memories:**")
                     for rel_mem in result["relevant_memories"]:
                         st.write(f"- {rel_mem.content}")
@@ -263,7 +293,7 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
                     if len(rel_memories) > 0:
                         json_resp.related_memory_ids = [
                             uuid_mapping[id] for id in json_resp.related_memory_ids
-                            if int(id) in uuid_mapping
+                            if id in uuid_mapping
                         ]
 
                     # Insert node in postgres
@@ -283,10 +313,12 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
 
                 elif dec.action == DecisionOutputType.MERGE_CONFLICT:
                     data: MergeConflictAction = dec.data
+                    # TODO: do this
                     st.info("Merge conflict detected - This will be handled in future updates")
 
                 elif dec.action == DecisionOutputType.RESOLVE_TEMPORAL_CONFLICT:
                     data: ResolveTemporalConflictAction = dec.data
+                    # TODO: do this
                     st.info("Temporal conflict detected - This will be handled in future updates")
 
                 elif dec.action == DecisionOutputType.ADDITION_TO_EXISTING_MEMORY:
@@ -337,7 +369,7 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
                             DEFAULT_CONFIGS["addition"]["temperature"]
                         ):
                             full_resp += chunk
-                        thinking_resp, json_resp = await process_thinking_response(full_resp)
+                        thinking_resp, json_resp = await process_thinking_response(full_resp, ModelResponseAddition)
 
                         st.write("**Model Thinking:**")
                         st.text(thinking_resp)

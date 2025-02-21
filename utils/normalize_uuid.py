@@ -34,7 +34,7 @@ def normalize_memories(memories: List[Memory]):
     uuid_mapping = {}
     for idx, memory in enumerate(memories):
         memory_id = memory.id
-        uuid_mapping[memory_id] = idx
-        memory.id = idx
+        uuid_mapping[str(idx)] = memory_id
+        memory.id = str(idx)
 
     return memories, uuid_mapping

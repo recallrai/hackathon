@@ -42,7 +42,6 @@ def get_memory_details(
     #     TagsDb.id.in_(tag_ids)
     # ).all()
     # tags = [t[0] for t in tags]
-    print(node)
     return Memory(
         id=node.id,
         content=node.text,
@@ -177,3 +176,12 @@ def n_gram_search(
         )
         for memory in memories
     ]
+
+def get_all_nodes() -> List[NodesDb]:
+    """Get all nodes from PostgreSQL database.
+    
+    Returns:
+        List[NodesDb]: List of all nodes in the database.
+    """
+    db: Session = next(get_db())
+    return db.query(NodesDb).all()
