@@ -1,9 +1,9 @@
 DEFAULT_CONFIGS = {
-    "query_hyperparmeters": {
-        "subquery_cand_nodes_w8": 0.5,
-        "keywords_cand_nodes_w8": 1.0,
-        "top_k": 20,
-    },
+    # "query_hyperparmeters": {
+    #     "subquery_cand_nodes_w8": 0.5,
+    #     "keywords_cand_nodes_w8": 1.0,
+    #     "top_k": 20,
+    # },
     "classifier": {
         "provider": "Together AI",
         "model": "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
