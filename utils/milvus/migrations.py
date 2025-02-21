@@ -28,7 +28,7 @@ def create_collection_if_not_exists() -> Collection:
     client = MilvusClient(
         uri=f"http://{settings.MILVUS_HOST}:{settings.MILVUS_PORT}"
     )
-    if not client.list_collections():
+    if settings.MILVUS_COLLECTION not in client.list_collections():
         collection = Collection(
             name=settings.MILVUS_COLLECTION,
             schema=schema,
