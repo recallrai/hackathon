@@ -313,12 +313,12 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
 
                 elif dec.action == DecisionOutputType.MERGE_CONFLICT:
                     data: MergeConflictAction = dec.data
-                    # TODO: do this
+                    # TODO: p1-do this
                     st.info("Merge conflict detected - This will be handled in future updates")
 
                 elif dec.action == DecisionOutputType.RESOLVE_TEMPORAL_CONFLICT:
                     data: ResolveTemporalConflictAction = dec.data
-                    # TODO: do this
+                    # TODO: p1-do this
                     st.info("Temporal conflict detected - This will be handled in future updates")
 
                 elif dec.action == DecisionOutputType.ADDITION_TO_EXISTING_MEMORY:

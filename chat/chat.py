@@ -116,7 +116,7 @@ async def show_chat(selected_model, temperature):
                     for k in queries_keywords_generator_result.data.bm25_keywords:
                         st.write(f"- {k}")
 
-            # TODO: update the model context based on new generated queries and keywords
+            # TODO: p1-update the model context based on new generated queries and keywords
 
             # Stream the assistant response directly to the chat interface
             model_config = settings.get_llm_config(selected_model)
