@@ -1,5 +1,6 @@
 from pymongo import MongoClient, ASCENDING
 from pymongo.collection import Collection
+from pymongo.server_api import ServerApi
 from pymongo.errors import ServerSelectionTimeoutError
 from config import get_settings
 
@@ -17,7 +18,14 @@ def create_collection_if_not_exists() -> Collection:
     }
     """
     try:
-        client = MongoClient(settings.get_mongo_uri(), serverSelectionTimeoutMS=5000)
+        client = MongoClient(
+            settings.get_mongo_uri(),
+            serverSelectionTimeoutMS=5000,
+            server_api=ServerApi('1'),
+            retryWrites=True,
+            connectTimeoutMS=30000,
+            socketTimeoutMS=None,
+        )
         # Ping server to check connection
         client.admin.command('ping')
     except ServerSelectionTimeoutError:

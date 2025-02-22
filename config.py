@@ -43,10 +43,11 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
 
     # MongoDB Configuration
-    MONGO_USER: str
-    MONGO_PASSWORD: str
-    MONGO_HOST: str
-    MONGO_PORT: str
+    # MONGO_USER: str
+    # MONGO_PASSWORD: str
+    # MONGO_HOST: str
+    # MONGO_PORT: str
+    MONGO_ATLAS_URI: str
     MONGO_DB: str
     MONGO_COLLECTION: str
 
@@ -75,7 +76,8 @@ class Settings(BaseSettings):
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     def get_mongo_uri(self) -> str:
-        return f"mongodb://{self.MONGO_USER}:{self.MONGO_PASSWORD}@{self.MONGO_HOST}:{self.MONGO_PORT}"
+        return self.MONGO_ATLAS_URI
+        # return f"mongodb://{self.MONGO_USER}:{self.MONGO_PASSWORD}@{self.MONGO_HOST}:{self.MONGO_PORT}"
 
     def get_milvus_uri(self) -> str:
         return f"tcp://{self.MILVUS_HOST}:{self.MILVUS_PORT}"
