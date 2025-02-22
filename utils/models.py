@@ -24,3 +24,12 @@ class Memory(BaseModel):
     @classmethod
     def clean_datetime(cls, dt_str: str) -> str:
         return dt_str.strip()
+
+class QuestionAnswer(BaseModel):
+    question: str
+    answer: str
+
+class ConflictingMemory(BaseModel):
+    memory_id: Union[int, str]
+    text: str
+    reason: str

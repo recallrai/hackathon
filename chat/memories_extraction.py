@@ -2,7 +2,7 @@ import streamlit as st
 import asyncio
 from datetime import datetime, timezone
 from typing import Dict, Any, List
-from utils.models import Memory
+from utils.models import Memory, ConflictingMemory, QuestionAnswer
 from utils.normalize_uuid import normalize_memories
 from .models import (
     AdditionToExistingMemoryAction, 
@@ -23,6 +23,10 @@ from utils.llm import LLMFactory, LLMProvider
 from utils.embeddings import EmbeddingsFactory, EmbeddingsProvider
 from prompts.ingestion.decision import get_decision_prompt_reasoning
 from prompts.ingestion.insertion import get_insertion_reasoning_prompt
+from prompts.ingestion.merge_conflict import (
+    get_merge_conflict_generate_questions_prompt, 
+    get_merge_conflict_generate_new_memories_prompt,
+)
 from .utils import process_thinking_response
 from prompts.ingestion.generation import get_memory_generation_prompt_reasoning
 from tools import get_calendar_for_any_month
@@ -319,12 +323,16 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
 
                 elif dec.action == DecisionOutputType.MERGE_CONFLICT:
                     data: MergeConflictAction = dec.data
-                    # TODO: p1-do this
+                    # TODO: P1 - do this
+                    # generate questions
+                    # ask user to resolve conflict
+                    # generate new memories
+                    # insert that memories in database
                     st.info("Merge conflict detected - This will be handled in future updates")
 
                 elif dec.action == DecisionOutputType.RESOLVE_TEMPORAL_CONFLICT:
                     data: ResolveTemporalConflictAction = dec.data
-                    # TODO: p1-do this
+                    # TODO: P1 - do this
                     st.info("Temporal conflict detected - This will be handled in future updates")
 
                 elif dec.action == DecisionOutputType.ADDITION_TO_EXISTING_MEMORY:

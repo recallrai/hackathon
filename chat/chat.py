@@ -8,6 +8,7 @@ from prompts.chat import (
 from .constants import DEFAULT_CONFIGS
 from config import get_settings
 from utils.llm import LLMFactory, LLMProvider
+from utils import postgres, mongodb, milvus
 from .models import ClassifierOutput, QueryKeywordsGeneratorOutput
 from .utils import process_thinking_response
 
@@ -116,7 +117,9 @@ async def show_chat(selected_model, temperature):
                     for k in queries_keywords_generator_result.data.bm25_keywords:
                         st.write(f"- {k}")
 
-            # TODO: p1-update the model context based on new generated queries and keywords
+            # TODO: P1 - update the model context based on new generated queries and keywords
+            # currenly i'm just putting all available memories in the context
+            st.session_state.assistant_context_memories = [node.text for node in await postgres.get_all_nodes()]
 
             # Stream the assistant response directly to the chat interface
             model_config = settings.get_llm_config(selected_model)
