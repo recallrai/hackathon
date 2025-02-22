@@ -119,7 +119,7 @@ async def show_chat(selected_model, temperature):
 
             # TODO: P1 - update the model context based on new generated queries and keywords
             # currenly i'm just putting all available memories in the context
-            available_nodes = await postgres.get_all_nodes()
+            available_nodes = postgres.get_all_nodes()
             st.session_state.assistant_context_memories = [node.text for node in available_nodes]
 
             # Stream the assistant response directly to the chat interface
