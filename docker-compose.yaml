@@ -1,5 +1,15 @@
 services:
-  app:
+  recallrai-backend-init-db-migration:
+    build: .
+    image: recallrai-backend:latest
+    container_name: recallrai-backend-init
+    command: sh -c "poetry run alembic upgrade head"
+    volumes:
+      - .:/app
+    networks:
+      - recallrai_prod
+
+  recallrai-hackathon-demo:
     build: .
     container_name: recallrai-hackathon
     restart: unless-stopped
@@ -13,6 +23,9 @@ services:
       - traefik.http.services.recallrai-hackathon.loadbalancer.server.port=8501
     networks:
       - recallrai_prod
+    depends_on:
+      recallrai-backend-init-db-migration:
+        condition: service_completed_successfully
 
 networks:
   recallrai_prod:
