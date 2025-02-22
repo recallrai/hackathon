@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    container_name: recallrai-hackathon
+    restart: unless-stopped
+    command: sh -c "poetry run python3 -m streamlit run main.py"
+    volumes:
+      - .:/app
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.recallrai-hackathon.rule=Host(`hackathon.recallrai.com`)
+      - traefik.http.routers.recallrai-hackathon.entrypoints=recallrai
+      - traefik.http.services.recallrai-hackathon.loadbalancer.server.port=8501
+    networks:
+      - recallrai_prod
+
+networks:
+  recallrai_prod:
+    external: true
