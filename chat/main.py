@@ -73,8 +73,8 @@ async def show_chat_interface():
     if "decision_results" not in st.session_state:
         st.session_state.decision_results = []
     # this is the assistant context that is passed to the model
-    if "assistant_context_memories" not in st.session_state:
-        st.session_state.assistant_context_memories = []
+    # if "assistant_context_memories" not in st.session_state:
+    #     st.session_state.assistant_context_memories = []
 
     with st.sidebar:
         st.subheader("Model Settings")
@@ -95,7 +95,7 @@ async def show_chat_interface():
             st.session_state.current_step = 0
             st.session_state.generated_memories = []
             st.session_state.decision_results = []
-            st.session_state.assistant_context_memories = []
+            # st.session_state.assistant_context_memories = []
             st.rerun()
 
     if not st.session_state.chat_welcome_shown:
