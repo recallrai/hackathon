@@ -1,5 +1,5 @@
 services:
-  recallrai-hackathon-init-db-migration:
+  recallrai-hackathon-demo-init-db-migration:
     build: .
     image: recallrai-backend:latest
     container_name: recallrai-backend-init
@@ -24,7 +24,7 @@ services:
     networks:
       - recallrai_prod
     depends_on:
-      recallrai-backend-init-db-migration:
+      recallrai-hackathon-demo-init-db-migration:
         condition: service_completed_successfully
 
 networks:
