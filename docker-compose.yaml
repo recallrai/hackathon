@@ -1,5 +1,5 @@
 services:
-  recallrai-backend-init-db-migration:
+  recallrai-hackathon-init-db-migration:
     build: .
     image: recallrai-backend:latest
     container_name: recallrai-backend-init
