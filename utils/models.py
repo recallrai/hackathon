@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from datetime import datetime
 from pydantic import BaseModel, Field
 
@@ -33,3 +33,13 @@ class ConflictingMemory(BaseModel):
     memory_id: Union[int, str]
     text: str
     reason: str
+
+class Question(BaseModel):
+    question: str
+    options: List[str]
+
+class QuestionResponse(BaseModel):
+    clarifying_questions: List[Question]
+
+class GeneratedMemories(BaseModel):
+    memories: List[str]

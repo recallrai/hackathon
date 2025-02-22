@@ -49,6 +49,13 @@ DEFAULT_CONFIGS = {
         "model": "deepseek-r1-distill-llama-70b",
         "temperature": 0.2,
     },
+    "merge_conflict": {
+        # "provider": "Samba Nova",
+        # "model": "DeepSeek-R1-Distill-Llama-70B",
+        "provider": "Groq",
+        "model": "deepseek-r1-distill-llama-70b",
+        "temperature": 0.2,
+    },
 }
 
 MONTHS = [

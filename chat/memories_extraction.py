@@ -2,7 +2,7 @@ import streamlit as st
 import asyncio
 from datetime import datetime, timezone
 from typing import Dict, Any, List
-from utils.models import Memory, ConflictingMemory, QuestionAnswer
+from utils.models import GeneratedMemories, Memory, ConflictingMemory, QuestionAnswer, QuestionResponse
 from utils.normalize_uuid import normalize_memories
 from .models import (
     AdditionToExistingMemoryAction, 
@@ -323,12 +323,87 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
 
                 elif dec.action == DecisionOutputType.MERGE_CONFLICT:
                     data: MergeConflictAction = dec.data
-                    # TODO: P1 - do this
-                    # generate questions
-                    # ask user to resolve conflict
-                    # generate new memories
-                    # insert that memories in database
-                    st.info("Merge conflict detected - This will be handled in future updates")
+                    st.write("**Processing Merge Conflict Action**")
+
+                    # Generate questions
+                    st.write("**Generating clarifying questions...**")
+                    prompt = get_merge_conflict_generate_questions_prompt(
+                        date=datetime.now(timezone.utc).strftime("%dth %B %Y"),
+                        time=datetime.now(timezone.utc).strftime("%H:%M:%S"),
+                        conflicting_memories=data.conflicting_memories,
+                        new_memory=st.session_state.generated_memories[idx]
+                    )
+
+                    # Get questions from LLM
+                    llm_provider = LLMFactory.create_provider(
+                        settings.get_llm_config(DEFAULT_CONFIGS["merge_conflict"]["model"])
+                    )
+                    messages = [{"role": "user", "content": prompt}]
+                    questions_response = ""
+                    async for chunk in llm_provider.stream_completion(
+                        messages,
+                        DEFAULT_CONFIGS["merge_conflict"]["temperature"]
+                    ):
+                        questions_response += chunk
+                    
+                    thinking, questions = await process_thinking_response(questions_response, QuestionResponse)
+                    
+                    st.write("**Model Thinking:**")
+                    st.text(thinking)
+                    st.write("**Questions Generated:**")
+                    
+                    # Collect answers
+                    answers = []
+                    for q_idx, question in enumerate(questions.clarifying_questions):
+                        st.write(f"\n**{question.question}**")
+                        answer = st.radio(
+                            "Select an answer:",
+                            options=question.options,
+                            key=f"question_{idx}_{q_idx}"
+                        )
+                        answers.append(QuestionAnswer(
+                            question=question.question,
+                            answer=answer
+                        ))
+                    
+                    if st.button(f"Generate Updated Memories for Conflict {idx}"):
+                        st.write("**Generating new memories...**")
+                        prompt = get_merge_conflict_generate_new_memories_prompt(
+                            question_answers=answers,
+                            existing_memories=data.conflicting_memories,
+                            message=st.session_state.generated_memories[idx]
+                        )
+                        
+                        memories_response = ""
+                        async for chunk in llm_provider.stream_completion(
+                            [{"role": "user", "content": prompt}],
+                            DEFAULT_CONFIGS["merge_conflict"]["temperature"]
+                        ):
+                            memories_response += chunk
+                            
+                        thinking, new_memories = await process_thinking_response(memories_response, GeneratedMemories)
+                        
+                        st.write("**Model Thinking:**")
+                        st.text(thinking)
+                        st.write("**New Memories Generated:**")
+                        for memory in new_memories.memories:
+                            st.write(f"- {memory}")
+                            
+                        # Update databases with new memories
+                        for memory in new_memories.memories:
+                            # Get embeddings
+                            provider = EmbeddingsFactory.create_provider(settings.embedding_model)
+                            embeddings = provider.get_embeddings(memory)
+                            
+                            # Insert into databases
+                            new_mem_id = postgres.insert_memory(memory)
+                            milvus.insert_node(new_mem_id, embeddings)
+                            
+                            # Update edges
+                            for conf_mem in data.conflicting_memories:
+                                mongodb.make_edge(new_mem_id, conf_mem.memory_id)
+                                
+                        st.success("Merge conflict resolved successfully")
 
                 elif dec.action == DecisionOutputType.RESOLVE_TEMPORAL_CONFLICT:
                     data: ResolveTemporalConflictAction = dec.data
