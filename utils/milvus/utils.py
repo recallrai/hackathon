@@ -95,7 +95,7 @@ def insert_node(node_id: str, embeddings: List[List[float]]) -> None:
         }
     ])
 
-def update_embeddings(node_id: str, embeddings: List[float]) -> None:
+def update_embeddings(node_id: str, embeddings: List[List[float]]) -> None:
     """Update a node's embeddings in the database.
 
     This function updates the embeddings of an existing node in the vector database
@@ -117,7 +117,7 @@ def update_embeddings(node_id: str, embeddings: List[float]) -> None:
         [
             {
                 "node_id": node_id,
-                "embedding": embeddings
+                "embedding": embeddings[0]
             }
         ]
     )
