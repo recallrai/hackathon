@@ -66,26 +66,25 @@ async def show_chat(selected_model, temperature):
             classifier_provider = LLMFactory.create_provider(classifier_config)
 
             # Run classifier before showing chat response
-            # classifier_prompt = get_classifier_prompt_reasoning(conversation=st.session_state.messages)
-            # classifier_messages = [{"role": "user", "content": classifier_prompt}]
+            classifier_prompt = get_classifier_prompt_reasoning(conversation=st.session_state.messages)
+            classifier_messages = [{"role": "user", "content": classifier_prompt}]
 
-            # classifier_response = ""
-            # async for chunk in classifier_provider.stream_completion(
-            #     classifier_messages, 
-            #     DEFAULT_CONFIGS["classifier"]["temperature"]
-            # ):
-            #     classifier_response += chunk
+            classifier_response = ""
+            async for chunk in classifier_provider.stream_completion(
+                classifier_messages, 
+                DEFAULT_CONFIGS["classifier"]["temperature"]
+            ):
+                classifier_response += chunk
 
-            # thinking, classification = await process_thinking_response(classifier_response, ClassifierOutput)
-            # with st.status("Analyzing memory needs...", expanded=False):
-            #     st.write("**Model Reasoning:**")
-            #     st.text(thinking)
-            #     st.write("**Classification Result:**")
-            #     st.json(classification.model_dump_json())
+            thinking, classification = await process_thinking_response(classifier_response, ClassifierOutput)
+            with st.status("Analyzing memory needs...", expanded=False):
+                st.write("**Model Reasoning:**")
+                st.text(thinking)
+                st.write("**Classification Result:**")
+                st.json(classification.model_dump_json())
 
             # Generate subqueries and keywords if memory_usage is True
-            # if classification.memory_usage:
-            if True:
+            if classification.memory_usage:
                 # Use queries_keywords_generator-specific model
                 query_keywords_generator_config = settings.get_llm_config(DEFAULT_CONFIGS["query_keywords_generator"]["model"])
                 query_keywords_generator_provider = LLMFactory.create_provider(query_keywords_generator_config)
