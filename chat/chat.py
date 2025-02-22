@@ -49,7 +49,8 @@ async def show_chat(selected_model, temperature):
             day=datetime.now().strftime("%A"),
             date=datetime.now().strftime("%dth %B %Y"),
             time=datetime.now().strftime("%I:%M %p"),
-            memories=st.session_state.assistant_context_memories
+            # memories=st.session_state.assistant_context_memories
+            memories=[node.text for node in postgres.get_all_nodes()]
         )
 
         # Add user message to session state
@@ -119,8 +120,8 @@ async def show_chat(selected_model, temperature):
 
             # TODO: P1 - update the model context based on new generated queries and keywords
             # currenly i'm just putting all available memories in the context
-            available_nodes = await postgres.get_all_nodes()
-            st.session_state.assistant_context_memories = [node.text for node in available_nodes]
+            # available_nodes = postgres.get_all_nodes()
+            # st.session_state.assistant_context_memories = [node.text for node in available_nodes]
 
             # Stream the assistant response directly to the chat interface
             model_config = settings.get_llm_config(selected_model)
