@@ -168,11 +168,12 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
             
             # Convert normalized IDs back to UUIDs
             if decision.action == DecisionOutputType.INSERT:
-                decision.data.content = new_memory_text
-                decision.data.related_memory_ids = [
-                    uuid_mapping[id] for id in decision.data.related_memory_ids
-                    if id in uuid_mapping
-                ]
+                pass
+                # decision.data.content = new_memory_text
+                # decision.data.related_memory_ids = [
+                #     uuid_mapping[id] for id in decision.data.related_memory_ids
+                #     if id in uuid_mapping
+                # ]
             elif decision.action == DecisionOutputType.MERGE_CONFLICT:
                 decision.data.conflicting_memories = [
                     memory for memory in decision.data.conflicting_memories 
