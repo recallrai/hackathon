@@ -331,7 +331,7 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
                         date=datetime.now(timezone.utc).strftime("%dth %B %Y"),
                         time=datetime.now(timezone.utc).strftime("%H:%M:%S"),
                         conflicting_memories=data.conflicting_memories,
-                        new_memory=st.session_state.generated_memories[idx]
+                        new_memory=st.session_state.generated_memories[idx-1]
                     )
 
                     # Get questions from LLM
