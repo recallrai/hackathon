@@ -142,10 +142,7 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
                 relevant_memories.append(memory)
             
             # Normalize memory IDs
-            print("relevant_memories: ", relevant_memories)
             normalized_memories, uuid_mapping = normalize_memories(relevant_memories)
-            print("normalized_memories: ", normalized_memories)
-            print("uuid_mapping: ", uuid_mapping)
             
             # Create decision prompt with normalized memories
             decision_prompt = get_decision_prompt_reasoning(
@@ -174,19 +171,27 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
                 decision.data.content = new_memory_text
                 decision.data.related_memory_ids = [
                     uuid_mapping[id] for id in decision.data.related_memory_ids
+                    if id in uuid_mapping
                 ]
             elif decision.action == DecisionOutputType.MERGE_CONFLICT:
+                decision.data.conflicting_memories = [
+                    memory for memory in decision.data.conflicting_memories 
+                    if memory.memory_id in uuid_mapping
+                ]
                 for memory in decision.data.conflicting_memories:
-                    if memory.memory_id in uuid_mapping:
-                        memory.memory_id = uuid_mapping[memory.memory_id]
+                    memory.memory_id = uuid_mapping[memory.memory_id]
             elif decision.action == DecisionOutputType.RESOLVE_TEMPORAL_CONFLICT:
                 decision.data.memory_ids = [
                     uuid_mapping[id] for id in decision.data.memory_ids
+                    if id in uuid_mapping 
                 ]
             elif decision.action == DecisionOutputType.ADDITION_TO_EXISTING_MEMORY:
+                decision.data.updated_memories = [
+                    memory for memory in decision.data.updated_memories
+                    if memory.memory_id in uuid_mapping
+                ]
                 for memory in decision.data.updated_memories:
-                    if memory.memory_id in uuid_mapping:
-                        memory.memory_id = uuid_mapping[memory.memory_id]
+                    memory.memory_id = uuid_mapping[memory.memory_id]
             elif decision.action == DecisionOutputType.IGNORE:
                 pass
             else:
@@ -345,7 +350,7 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
                         prompt = ""
                         if len(rel_memories) > 0:
                             # Normalize memories for insertion prompt
-                            normalized_memories, id_mapping = normalize_memories(rel_memories)
+                            normalized_memories, uuid_mapping = normalize_memories(rel_memories)
                             # Create prompt with normalized memories
                             prompt = get_insertion_reasoning_prompt(
                                 new_memory=updated_memory.content,
@@ -380,7 +385,8 @@ Below is the calendar for the month of {MONTHS[month - 1]} and year {year} in CS
                         # Convert int back to uuid using mappings if we have related memories
                         if len(rel_memories) > 0:
                             json_resp.related_memory_ids = [
-                                id_mapping[id] for id in json_resp.related_memory_ids
+                                uuid_mapping[id] for id in json_resp.related_memory_ids
+                                if id in uuid_mapping
                             ]
 
                         # Update memory in postgres
